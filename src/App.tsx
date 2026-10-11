@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { cloneElement, isValidElement, useEffect, useState, type ReactNode } from 'react';
 import {
   ArrowRight,
   CheckCircle2,
@@ -66,9 +66,10 @@ const timelineStages = [
 
 const translations = {
   en: {
+    metaDescription:
+      'Ontario Care Bridge is a demonstration concept for helping people find their next step toward primary care in Ontario.',
     home: 'Home',
     howItWorks: 'How It Works',
-    findCare: 'Find Care',
     trackApplication: 'Track Application',
     findCareButton: 'Find Care Near Me',
     howItWorksButton: 'How It Works',
@@ -84,9 +85,10 @@ const translations = {
     backToHome: 'Return to Home',
   },
   fr: {
+    metaDescription:
+      'Ontario Care Bridge est un concept de démonstration qui aide les gens à trouver la prochaine étape vers des soins primaires en Ontario.',
     home: 'Accueil',
     howItWorks: 'Comment ça fonctionne',
-    findCare: 'Trouver des soins',
     trackApplication: 'Suivi de la demande',
     findCareButton: 'Trouver des soins près de chez moi',
     howItWorksButton: 'Comment ça fonctionne',
@@ -102,6 +104,220 @@ const translations = {
     backToHome: 'Retour à l’accueil',
   },
 } as const;
+
+const frenchText: Record<string, string> = {
+  'Simulated service concept': 'Concept de service simulé',
+  'Patient journey': 'Parcours du patient',
+  Demo: 'Démo',
+  'Your Needs': 'Vos besoins',
+  'Find a Clinic': 'Trouver une clinique',
+  'Submit an Application': 'Soumettre une demande',
+  'Track Your Status': 'Suivre votre demande',
+  'Current status': 'Statut actuel',
+  'Searching for a possible next step': 'Recherche d’une prochaine étape possible',
+  'Why this matters': 'Pourquoi est-ce important',
+  'The proposed solution': 'La solution proposée',
+  'Less uncertainty about where to go.': 'Moins d’incertitude quant à l’endroit où aller.',
+  'Clearer application progress.': 'Un suivi plus clair de la demande.',
+  'A more connected patient experience.': 'Une expérience de soins mieux coordonnée.',
+  'Start the patient journey': 'Commencer le parcours de soins',
+  'Design concept': 'Concept de conception',
+  'How It Works': 'Comment ça fonctionne',
+  Patient: 'Patient',
+  'Existing Healthcare Services': 'Services de santé existants',
+  'Patient Update': 'Mise à jour au patient',
+  'Health811': 'Health811',
+  'Starting point for navigation and health advice.': 'Point de départ pour s’orienter et obtenir des conseils en santé.',
+  'Central Intake': 'Guichet central',
+  'Potential source of clinic matching and intake information.': 'Source possible de jumelage avec des cliniques et de renseignements sur l’admission.',
+  'eReferral Ontario': 'eReferral Ontario',
+  'Potential component of an appropriately authorized referral workflow.': 'Composante possible d’un processus d’aiguillage dûment autorisé.',
+  'This is a proposal, not an existing integrated service. Any real implementation would require technical, clinical, legal, privacy, and operational approval.':
+    'Il s’agit d’une proposition et non d’un service intégré existant. Toute mise en œuvre réelle nécessiterait des approbations techniques, cliniques, juridiques, opérationnelles et en matière de protection de la vie privée.',
+  'Demo tracking': 'Suivi de démonstration',
+  'Reference number': 'Numéro de référence',
+  Copy: 'Copier',
+  'Selected clinic': 'Clinique sélectionnée',
+  'Application Submitted': 'Demande soumise',
+  'Your demo application has been created and is ready for review.': 'Votre demande de démonstration a été créée et est prête à être examinée.',
+  'Clinic Matching': 'Recherche de cliniques correspondantes',
+  'We are checking which fictional clinics may be a potential fit.': 'Nous vérifions quelles cliniques fictives pourraient vous convenir.',
+  'Potential Clinic Match Found': 'Une clinique correspondante a été trouvée',
+  'A clinic match has been identified and is ready for follow-up.': 'Une clinique correspondante a été repérée et un suivi peut être effectué.',
+  'Awaiting Clinic Contact': 'En attente d’un contact de la clinique',
+  'The system is waiting for a clinic response in this demonstration.': 'Dans cette démonstration, le système attend une réponse de la clinique.',
+  'Next Steps Available': 'Prochaines étapes disponibles',
+  'Your next step would be to confirm intake details and documentation requirements.': 'La prochaine étape consisterait à confirmer les détails de l’admission et les documents requis.',
+  Completed: 'Terminé',
+  'Completed:': 'Terminé :',
+  Current: 'En cours',
+  Upcoming: 'À venir',
+  'Simulate Next Status': 'Simuler le prochain statut',
+  'All statuses are simulated and do not represent real clinic activity or patient care.':
+    'Tous les statuts sont simulés et ne reflètent pas l’activité réelle d’une clinique ni des soins aux patients.',
+  'Application dashboard': 'Tableau de bord des demandes',
+  'This is a demonstration concept for helping patients understand their next step toward primary care in Ontario.':
+    'Ce concept de démonstration aide les patients à comprendre la prochaine étape vers des soins primaires en Ontario.',
+  Explore: 'Explorer',
+  'About Ontario Care Bridge': 'À propos d’Ontario Care Bridge',
+  Accessibility: 'Accessibilité',
+  Privacy: 'Confidentialité',
+  Contact: 'Coordonnées',
+  Disclaimer: 'Avis',
+  'This site is a demonstration concept and is not connected to Ontario healthcare systems or real service delivery.':
+    'Ce site est un concept de démonstration qui n’est lié ni aux systèmes de santé de l’Ontario ni à la prestation réelle de services.',
+  'Find care': 'Trouver des soins',
+  'Your care search': 'Recherche de soins',
+  Close: 'Fermer',
+  Step: 'Étape',
+  'of 4': 'sur 4',
+  'Reviewing your preferences...': 'Examen de vos préférences...',
+  'Checking simulated clinic availability...': 'Vérification des disponibilités simulées des cliniques...',
+  'Finding a potential match...': 'Recherche d’une correspondance possible...',
+  Back: 'Retour',
+  Continue: 'Continuer',
+  'Find Matching Clinics': 'Trouver des cliniques correspondantes',
+  'Clinic details': 'Détails de la clinique',
+  'Close clinic details': 'Fermer les détails de la clinique',
+  'General location': 'Emplacement général',
+  'Approximate distance': 'Distance approximative',
+  'Supported languages': 'Langues offertes',
+  'Simulated intake requirements': 'Conditions d’admission simulées',
+  'Illustrative next steps': 'Prochaines étapes proposées',
+  'This is a fictional clinic profile used for the prototype. It does not represent a real appointment or confirmed acceptance.':
+    'Ce profil de clinique est fictif et sert au prototype. Il ne représente ni un véritable rendez-vous ni une acceptation confirmée.',
+  'Submit Demo Application': 'Soumettre une demande de démonstration',
+  'Preferred search radius': 'Rayon de recherche souhaité',
+  'What would help you feel comfortable accessing care?': 'Qu’est-ce qui vous aiderait à accéder aux soins en toute confiance?',
+  'Accessibility preferences': 'Préférences en matière d’accessibilité',
+  'Communication preferences': 'Préférences de communication',
+  'What kind of care are you looking for?': 'Quel type de soins recherchez-vous?',
+  'If you are experiencing a medical emergency, call 911.': 'En cas d’urgence médicale, composez le 911.',
+  'For non-emergency health advice in Ontario, contact Health811.': 'Pour obtenir des conseils de santé non urgents en Ontario, communiquez avec Health811.',
+  'Review your preferences': 'Vérifiez vos préférences',
+  'I understand the clinic results are simulated and do not represent a real appointment or confirmed acceptance.':
+    'Je comprends que les résultats des cliniques sont simulés et ne représentent ni un véritable rendez-vous ni une acceptation confirmée.',
+  'Potential clinic matches': 'Cliniques potentiellement correspondantes',
+  'Modify search': 'Modifier la recherche',
+  'No matches found': 'Aucune correspondance trouvée',
+  'Try widening the search radius or adjusting your language preferences.':
+    'Essayez d’élargir le rayon de recherche ou de modifier vos préférences linguistiques.',
+  'Expand search radius': 'Élargir le rayon de recherche',
+  'Approx.': 'À environ',
+  'km away': 'km de distance',
+  'View Details': 'Voir les détails',
+  'Continue With This Clinic': 'Continuer avec cette clinique',
+  'Where are you looking for care?': 'Où recherchez-vous des soins?',
+  'Optional postal code': 'Code postal (facultatif)',
+  'I understand': 'Je comprends',
+  'Find a family doctor': 'Trouver un médecin de famille',
+  'Find a primary care clinic': 'Trouver une clinique de soins primaires',
+  'Get help understanding my healthcare options': 'Obtenir de l’aide pour comprendre mes options de soins de santé',
+  'Help finding the right type of care': 'Obtenir de l’aide pour trouver le type de soins approprié',
+  'Wheelchair access': 'Accès en fauteuil roulant',
+  'Interpreter support': 'Services d’interprétation',
+  'Large print materials': 'Documents en gros caractères',
+  'Quiet visit options': 'Options de consultation dans un environnement calme',
+  Phone: 'Téléphone',
+  Email: 'Courriel',
+  'Text message': 'Message texte',
+  'In-person support': 'Soutien en personne',
+  English: 'Anglais',
+  French: 'Français',
+  Mandarin: 'Mandarin',
+  Cantonese: 'Cantonais',
+  Punjabi: 'Pendjabi',
+  Arabic: 'Arabe',
+  Other: 'Autre',
+  'City / town': 'Ville / localité',
+  'Not provided': 'Non indiqué',
+  'Postal code': 'Code postal',
+  Optional: 'Facultatif',
+  Radius: 'Rayon',
+  Language: 'Langue',
+  'Not selected': 'Aucune sélection',
+  'Care need': 'Besoin en matière de soins',
+  'Please enter a city or town to continue.': 'Veuillez saisir une ville ou une localité pour continuer.',
+  'Please choose the type of care you are looking for.': 'Veuillez choisir le type de soins recherché.',
+  'Please confirm that the clinic results are simulated.': 'Veuillez confirmer que les résultats des cliniques sont simulés.',
+  'A welcoming community-based clinic with same-day intake support and a strong focus on family-based primary care.':
+    'Une clinique communautaire accueillante offrant un soutien à l’admission le jour même et axée sur les soins primaires familiaux.',
+  'Good fit for patients seeking a family doctor and a clinic with broader community supports.':
+    'Un bon choix pour les personnes qui cherchent un médecin de famille et des services communautaires plus étendus.',
+  'Maple Community Health Centre': 'Centre de santé communautaire Maple',
+  'East Toronto, Ontario': 'Est de Toronto, Ontario',
+  'Harbourview Primary Care': 'Soins primaires Harbourview',
+  'Downtown Toronto, Ontario': 'Centre-ville de Toronto, Ontario',
+  'Northstar Family Health Clinic': 'Clinique de santé familiale Northstar',
+  'Riverside Community Medical Centre': 'Centre médical communautaire Riverside',
+  'Helps people understand where to seek care, but cannot guarantee that a clinic will accept them.':
+    'Aide les gens à savoir où obtenir des soins, sans toutefois garantir qu’une clinique les acceptera.',
+  'May help connect patients with primary care opportunities, but entry requirements can create barriers for people without a family doctor.':
+    'Peut aider les patients à accéder à des soins primaires, mais les critères d’admission peuvent constituer un obstacle pour les personnes sans médecin de famille.',
+  'Supports electronic referrals, but does not independently solve the initial access problem for unattached patients.':
+    'Facilite les aiguillages électroniques, mais ne résout pas à lui seul le problème d’accès initial des personnes sans fournisseur de soins.',
+  'Patients can become stuck between navigation, clinic intake, and referral systems. This concept is designed to make the next step clearer without implying a real-time integrated service.':
+    'Les patients peuvent se retrouver bloqués entre les services d’orientation, l’admission des cliniques et les systèmes d’aiguillage. Ce concept vise à clarifier la prochaine étape sans laisser entendre qu’il s’agit d’un service intégré en temps réel.',
+  'North York, Ontario': 'North York, Ontario',
+  'Etobicoke, Ontario': 'Etobicoke, Ontario',
+  'New patient registration form': 'Formulaire d’inscription pour les nouveaux patients',
+  'Preferred contact method': 'Mode de communication privilégié',
+  'Availability check for new openings': 'Vérification des nouvelles places disponibles',
+  'Confirm whether intake is open for new patients': 'Confirmer si la clinique accepte de nouveaux patients',
+  'Review registration information': 'Examiner les renseignements d’inscription',
+  'Receive a follow-up communication from clinic staff': 'Recevoir un suivi du personnel de la clinique',
+  'Fictional clinic profile for demonstration purposes only.': 'Profil de clinique fictif, à des fins de démonstration seulement.',
+  'A downtown practice offering primary care and preventive services with limited new patient capacity.':
+    'Un cabinet du centre-ville offrant des soins primaires et préventifs, avec une capacité limitée pour les nouveaux patients.',
+  'Best suited to patients who need a clinic with language support and a smaller caseload.':
+    'Convient particulièrement aux personnes qui ont besoin de services linguistiques et d’une clinique ayant une patientèle moins nombreuse.',
+  'Brief intake questionnaire': 'Bref questionnaire d’admission',
+  'Availability confirmation': 'Confirmation des disponibilités',
+  'Language preference noted during registration': 'Préférence linguistique consignée lors de l’inscription',
+  'Check current waitlist status': 'Vérifier l’état actuel de la liste d’attente',
+  'Complete temporary registration form': 'Remplir le formulaire d’inscription provisoire',
+  'Confirm whether a clinician is available for intake': 'Confirmer la disponibilité d’un professionnel de la santé pour l’admission',
+  'A family health clinic with multilingual support and broad primary care services for unattached patients.':
+    'Une clinique de médecine familiale offrant des services multilingues et une vaste gamme de soins primaires aux personnes sans médecin de famille.',
+  'Strong option for families or patients seeking care in a culturally inclusive environment.':
+    'Une excellente option pour les familles et les personnes qui cherchent des soins dans un milieu culturellement inclusif.',
+  'Initial form and contact preference': 'Formulaire initial et préférence de communication',
+  'Translation support if needed': 'Services de traduction au besoin',
+  'Current patient capacity check': 'Vérification de la capacité actuelle de la clinique',
+  'Review clinic intake timing': 'Vérifier les délais d’admission de la clinique',
+  'Confirm preferred language support': 'Confirmer les services offerts dans la langue souhaitée',
+  'Receive a simulated clinic response': 'Recevoir une réponse simulée de la clinique',
+  'A community medical centre pairing primary care with integrated health and social supports, though currently at limited capacity.':
+    'Un centre médical communautaire qui associe les soins primaires à des services intégrés de santé et de soutien social, mais dont la capacité est actuellement limitée.',
+  'Useful for patients who want a broader family health environment but may need to try again later.':
+    'Utile pour les personnes qui souhaitent bénéficier d’une gamme plus large de services de santé familiale, mais qui devront peut-être réessayer plus tard.',
+  'Waitlist enrollment': 'Inscription sur la liste d’attente',
+  'Follow-up contact preference': 'Préférence de communication pour le suivi',
+  'Availability review': 'Vérification des disponibilités',
+  'Check whether a future intake window opens': 'Vérifier si une nouvelle période d’admission sera ouverte',
+  'Keep the application on file for later review': 'Conserver la demande au dossier pour un examen ultérieur',
+  'Consider other nearby clinics in the meantime': 'Envisager d’autres cliniques à proximité entre-temps',
+  'Simulated: Accepting Patients': 'Simulé : accepte des patients',
+  'Simulated: Limited Availability': 'Simulé : disponibilités limitées',
+  'Simulated: Not Currently Accepting': 'Simulé : n’accepte pas de patients actuellement',
+  'Toggle navigation': 'Afficher ou masquer la navigation',
+};
+
+const translateText = (text: string, language: Language) => {
+  if (language !== 'fr') return text;
+  const trimmed = text.trim();
+  const translation = frenchText[trimmed];
+  return translation ? text.replace(trimmed, translation) : text;
+};
+
+function translateTree(node: ReactNode, language: Language): ReactNode {
+  if (typeof node === 'string') return translateText(node, language);
+  if (Array.isArray(node)) return node.map((child) => translateTree(child, language));
+  if (isValidElement<{ children?: ReactNode }>(node)) {
+    return cloneElement(node, undefined, translateTree(node.props.children, language));
+  }
+  return node;
+}
 
 const defaultPreferences: Preferences = {
   city: 'Toronto, Ontario',
@@ -150,6 +366,11 @@ function App() {
   const [sampleStageIndex, setSampleStageIndex] = useState(2);
 
   const t = translations[language];
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t.metaDescription);
+  }, [language, t.metaDescription]);
 
   const openSection = (section: SectionId) => {
     setActiveView(section === 'track' ? 'track' : 'home');
@@ -274,7 +495,12 @@ function App() {
     { label: 'City / town', value: preferences.city || 'Not provided' },
     { label: 'Postal code', value: preferences.postalCode || 'Optional' },
     { label: 'Radius', value: `${preferences.radius} km` },
-    { label: 'Language', value: preferences.languages.length ? preferences.languages.join(', ') : 'Not selected' },
+    {
+      label: 'Language',
+      value: preferences.languages.length
+        ? preferences.languages.map((preferenceLanguage) => translateText(preferenceLanguage, language)).join(', ')
+        : 'Not selected',
+    },
     { label: 'Care need', value: preferences.careNeed },
   ];
 
@@ -532,8 +758,8 @@ function App() {
     );
   };
 
-  return (
-    <div id="top" className="min-h-screen bg-slate-50 text-slate-900">
+  return translateTree(
+    <div id="top" lang={language} className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between gap-4">
@@ -556,9 +782,6 @@ function App() {
               </button>
               <button type="button" onClick={() => openSection('how-it-works')} className="text-sm font-medium text-slate-600 hover:text-slate-900">
                 {t.howItWorks}
-              </button>
-              <button type="button" onClick={() => openSection('find-care')} className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                {t.findCare}
               </button>
               <button type="button" onClick={() => openSection('track')} className="text-sm font-medium text-slate-600 hover:text-slate-900">
                 {t.trackApplication}
@@ -599,7 +822,7 @@ function App() {
               type="button"
               onClick={() => setMobileMenuOpen((current) => !current)}
               className="rounded-xl border border-slate-200 p-2 lg:hidden"
-              aria-label="Toggle navigation"
+              aria-label={translateText('Toggle navigation', language)}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -612,9 +835,6 @@ function App() {
               </button>
               <button type="button" onClick={() => openSection('how-it-works')} className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
                 {t.howItWorks}
-              </button>
-              <button type="button" onClick={() => openSection('find-care')} className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
-                {t.findCare}
               </button>
               <button type="button" onClick={() => openSection('track')} className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
                 {t.trackApplication}
@@ -887,7 +1107,7 @@ function App() {
                             </div>
                             {isCompleted && (
                               <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700">
-                                Completed: {new Date(activeApplication.submittedAt).toLocaleString()}
+                                Completed: {new Date(activeApplication.submittedAt).toLocaleString(language === 'fr' ? 'fr-CA' : 'en-CA')}
                               </p>
                             )}
                           </div>
@@ -972,7 +1192,7 @@ function App() {
                         </div>
                         {isCompleted && (
                           <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700">
-                            Completed: {new Date(activeApplication.submittedAt).toLocaleString()}
+                            Completed: {new Date(activeApplication.submittedAt).toLocaleString(language === 'fr' ? 'fr-CA' : 'en-CA')}
                           </p>
                         )}
                       </div>
@@ -1049,7 +1269,7 @@ function App() {
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Find care</p>
                 <h3 className="mt-1 text-xl font-bold text-slate-900">Your care search</h3>
               </div>
-              <button type="button" onClick={() => setWizardOpen(false)} className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label="Close">
+              <button type="button" onClick={() => setWizardOpen(false)} className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label={translateText('Close', language)}>
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -1121,7 +1341,7 @@ function App() {
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">Clinic details</p>
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">{selectedClinic.name}</h3>
               </div>
-              <button type="button" onClick={() => setSelectedClinic(null)} className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label="Close clinic details">
+              <button type="button" onClick={() => setSelectedClinic(null)} className="rounded-xl border border-slate-200 p-2 text-slate-700 hover:bg-slate-100" aria-label={translateText('Close clinic details', language)}>
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -1189,7 +1409,8 @@ function App() {
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    language,
   );
 }
 
