@@ -1,16 +1,24 @@
 export type ClinicStatus = 'Simulated: Accepting Patients' | 'Simulated: Limited Availability' | 'Simulated: Not Currently Accepting';
+export type ContactMethod = 'online-only' | 'telephone-required' | 'online-and-telephone' | 'unknown' | 'automated-calls-blocked';
 
 export interface Clinic {
   id: string;
   name: string;
   location: string;
+  serviceArea: string;
   distance: number;
   languages: string[];
   status: ClinicStatus;
+  contactMethod: ContactMethod;
+  phoneNumber: string;
+  bookingUrl?: string;
   description: string;
   matchingInfo: string;
+  eligibilityCriteria: string[];
   intakeRequirements: string[];
   nextSteps: string[];
+  source: string;
+  lastUpdated: string;
   fictionNote: string;
 }
 
@@ -19,60 +27,86 @@ export const clinics: Clinic[] = [
     id: 'maple-community',
     name: 'Maple Community Health Centre',
     location: 'East Toronto, Ontario',
+    serviceArea: 'Riverdale, Leslieville, East Toronto',
     distance: 5.4,
     languages: ['English', 'French'],
     status: 'Simulated: Accepting Patients',
+    contactMethod: 'online-and-telephone',
+    phoneNumber: '(416) 555-0142',
+    bookingUrl: 'https://example-clinic.org/book',
     description:
       'A welcoming community-based clinic with same-day intake support and a strong focus on family-based primary care.',
     matchingInfo:
       'Good fit for patients seeking a family doctor and a clinic with broader community supports.',
+    eligibilityCriteria: ['Resident of the East Toronto service area', 'Not currently attached to another family physician', 'Open to new-patient intake during the simulated review cycle'],
     intakeRequirements: ['New patient registration form', 'Preferred contact method', 'Availability check for new openings'],
     nextSteps: ['Confirm whether intake is open for new patients', 'Review registration information', 'Receive a follow-up communication from clinic staff'],
+    source: 'Mock OHT clinic capacity dataset',
+    lastUpdated: '2026-10-10T09:15:00',
     fictionNote: 'Fictional clinic profile for demonstration purposes only.',
   },
   {
     id: 'harbourview-primary',
     name: 'Harbourview Primary Care',
     location: 'Downtown Toronto, Ontario',
+    serviceArea: 'Downtown Toronto, Harbourfront, Trinity-Bellwoods',
     distance: 7.8,
     languages: ['English', 'Mandarin'],
     status: 'Simulated: Limited Availability',
+    contactMethod: 'telephone-required',
+    phoneNumber: '(647) 555-2198',
     description:
       'A downtown practice offering primary care and preventive services with limited new patient capacity.',
     matchingInfo:
       'Best suited to patients who need a clinic with language support and a smaller caseload.',
+    eligibilityCriteria: ['Primary residence within central Toronto service area', 'Priority for multilingual access requests', 'Limited new-patient slots during the simulated period'],
     intakeRequirements: ['Brief intake questionnaire', 'Availability confirmation', 'Language preference noted during registration'],
     nextSteps: ['Check current waitlist status', 'Complete temporary registration form', 'Confirm whether a clinician is available for intake'],
+    source: 'Mock physician roster capacity feed',
+    lastUpdated: '2026-10-09T16:30:00',
     fictionNote: 'Fictional clinic profile for demonstration purposes only.',
   },
   {
     id: 'northstar-family',
     name: 'Northstar Family Health Clinic',
     location: 'North York, Ontario',
+    serviceArea: 'North York, Willowdale, Jane-Finch',
     distance: 12.1,
     languages: ['English', 'Punjabi', 'Cantonese'],
     status: 'Simulated: Accepting Patients',
+    contactMethod: 'online-only',
+    phoneNumber: '(416) 555-3384',
+    bookingUrl: 'https://example-clinic.org/intake',
     description:
       'A family health clinic with multilingual support and broad primary care services for unattached patients.',
     matchingInfo:
       'Strong option for families or patients seeking care in a culturally inclusive environment.',
+    eligibilityCriteria: ['New patient intake open for residents in north-central Toronto', 'Language support preference can be accommodated', 'Regular primary-care attachment availability in the simulated dataset'],
     intakeRequirements: ['Initial form and contact preference', 'Translation support if needed', 'Current patient capacity check'],
     nextSteps: ['Review clinic intake timing', 'Confirm preferred language support', 'Receive a simulated clinic response'],
+    source: 'Mock community clinic capacity register',
+    lastUpdated: '2026-10-11T08:45:00',
     fictionNote: 'Fictional clinic profile for demonstration purposes only.',
   },
   {
     id: 'riverside-community',
     name: 'Riverside Community Medical Centre',
     location: 'Etobicoke, Ontario',
+    serviceArea: 'Etobicoke, South Kingsway, Mimico',
     distance: 18.4,
     languages: ['English', 'Arabic', 'French'],
     status: 'Simulated: Not Currently Accepting',
+    contactMethod: 'automated-calls-blocked',
+    phoneNumber: '(905) 555-4471',
     description:
       'A community medical centre pairing primary care with integrated health and social supports, though currently at limited capacity.',
     matchingInfo:
       'Useful for patients who want a broader family health environment but may need to try again later.',
+    eligibilityCriteria: ['Patient interest in community-based primary-care access', 'Current waitlist status reviewed by coordinator', 'Not currently accepting new attachments in the simulated dataset'],
     intakeRequirements: ['Waitlist enrollment', 'Follow-up contact preference', 'Availability review'],
     nextSteps: ['Check whether a future intake window opens', 'Keep the application on file for later review', 'Consider other nearby clinics in the meantime'],
+    source: 'Mock community health partnership registry',
+    lastUpdated: '2026-10-08T12:00:00',
     fictionNote: 'Fictional clinic profile for demonstration purposes only.',
   },
 ];
