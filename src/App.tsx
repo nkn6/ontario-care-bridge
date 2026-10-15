@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { clinics, matchClinics, type Clinic } from './data/clinics';
+import { websiteLanguages, type WebsiteLanguageCode } from './data/websiteLanguages';
 
 type Language = 'en' | 'fr';
 type SectionId = 'home' | 'how-it-works' | 'find-care' | 'track';
@@ -182,8 +183,8 @@ const callAssistantTranslations = {
     contactMyself: "I'll contact the clinic myself",
     continueOnline: 'Continue online',
     purpose: 'Purpose of the call',
-    preferredLanguage: 'Preferred language',
-    languageForCall: 'Language selected for the call',
+    preferredLanguage: 'Preferred spoken language',
+    languageForCall: 'Spoken language for the call',
     patientInfo: 'Patient-approved information to share',
     questions: 'Questions you want the assistant to ask',
     preferredContact: 'Preferred way for the clinic to contact the patient',
@@ -237,7 +238,7 @@ const callAssistantTranslations = {
     contactBlocked: 'This clinic does not accept automated calls. You can use its online option, if available, or contact the clinic yourself.',
     contactMethodUnknown: 'The clinic contact method is not confirmed. This simulation will not place a call.',
     nextStep: 'Next step',
-    approvedDetails: 'Name, service area, preferred language, and contact preference approved by the patient.',
+    approvedDetails: 'Name, service area, preferred spoken language, and contact preference approved by the patient.',
     sampleQuestions: 'Are you accepting new patients? Is there an intake form or waitlist? What is the next step?',
     preferredContactDefault: 'Phone or email follow-up from clinic staff after review.',
     onlineBookingTitle: 'Simulated online intake',
@@ -255,8 +256,8 @@ const callAssistantTranslations = {
     contactMyself: 'Je contacterai la clinique moi-même',
     continueOnline: 'Continuer en ligne',
     purpose: 'Objet de l’appel',
-    preferredLanguage: 'Langue préférée',
-    languageForCall: 'Langue sélectionnée pour l’appel',
+    preferredLanguage: 'Langue parlée préférée',
+    languageForCall: 'Langue parlée pour l’appel',
     patientInfo: 'Renseignements approuvés par le patient à partager',
     questions: 'Questions que vous souhaitez que l’assistant pose',
     preferredContact: 'Méthode privilégié pour que la clinique contacte le patient',
@@ -310,7 +311,7 @@ const callAssistantTranslations = {
     contactBlocked: 'Cette clinique n’accepte pas les appels automatisés. Vous pouvez utiliser son option en ligne, si elle est offerte, ou contacter la clinique vous-même.',
     contactMethodUnknown: 'La méthode de contact de la clinique n’est pas confirmée. Cette simulation ne fera aucun appel.',
     nextStep: 'Prochaine étape',
-    approvedDetails: 'Nom, secteur de service, langue préférée et mode de communication approuvés par le patient.',
+    approvedDetails: 'Nom, secteur de service, langue parlée préférée et mode de communication approuvés par le patient.',
     sampleQuestions: 'Acceptez-vous de nouveaux patients? Y a-t-il un formulaire d’admission ou une liste d’attente? Quelle est la prochaine étape?',
     preferredContactDefault: 'Suivi par téléphone ou par courriel du personnel de la clinique après examen.',
     onlineBookingTitle: 'Admission en ligne simulée',
@@ -375,6 +376,7 @@ const frenchText: Record<string, string> = {
   'Optional postal code': 'Code postal facultatif',
   'Preferred search radius': 'Rayon de recherche préféré',
   'What would help you feel comfortable accessing care?': 'Qu’est-ce qui vous aiderait à vous sentir à l’aise pour accéder aux soins ?',
+  'Which spoken languages would help you feel comfortable accessing care?': 'Quelles langues parlées vous aideraient à vous sentir à l’aise pour accéder aux soins ?',
   'Accessibility preferences': 'Préférences d’accessibilité',
   'Communication preferences': 'Préférences de communication',
   'What kind of care are you looking for?': 'Quel type de soins recherchez-vous ?',
@@ -546,7 +548,7 @@ const defaultPreferences: Preferences = {
   acknowledged: false,
 };
 
-const languageOptions = ['English', 'French', 'Mandarin', 'Cantonese', 'Punjabi', 'Arabic', 'Other'];
+const preferredLanguageOptions = ['English', 'French', 'Mandarin', 'Cantonese', 'Punjabi', 'Arabic', 'Other'];
 const accessibilityOptions = ['Wheelchair access', 'Interpreter support', 'Large print materials', 'Quiet visit options'];
 const communicationOptions = ['Phone', 'Email', 'Text message', 'In-person support'];
 const careOptions = [
@@ -566,6 +568,7 @@ const sampleApplication: ApplicationRecord = {
 
 function App() {
   const [language, setLanguage] = useState<Language>('en');
+  const [selectedWebsiteLanguage, setSelectedWebsiteLanguage] = useState<WebsiteLanguageCode>('en');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeView, setActiveView] = useState<'home' | 'track'>('home');
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -595,7 +598,7 @@ function App() {
     purpose: 'Ask whether the clinic is accepting new patients and learn the next intake step.',
     preferredLanguage: language === 'fr' ? 'Français' : 'English',
     callLanguage: language === 'fr' ? 'Français' : 'English',
-    patientDetails: 'Name, service area, preferred language, and contact preference approved by the patient.',
+    patientDetails: 'Name, service area, preferred spoken language, and contact preference approved by the patient.',
     questions: 'Are you accepting new patients? Is there an intake form or waitlist? What is the next step?',
     preferredContact: 'Phone or email follow-up from clinic staff after review.',
   });
@@ -767,22 +770,34 @@ function App() {
     setLanguage(nextLanguage);
   };
 
+  const selectWebsiteLanguage = (nextLanguage: WebsiteLanguageCode) => {
+    setSelectedWebsiteLanguage(nextLanguage);
+    if (nextLanguage === 'en' || nextLanguage === 'fr') {
+      handleLanguageToggle(nextLanguage);
+    }
+  };
+
   const renderLanguageToggle = () => (
-    <div className="flex rounded-full border border-slate-200 bg-slate-50 p-1" aria-label="Language">
-      {(['en', 'fr'] as const).map((option) => (
-        <button
-          key={option}
-          type="button"
-          onClick={() => handleLanguageToggle(option)}
-          aria-pressed={language === option}
-          className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-            language === option ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
-          }`}
-        >
-          {option.toUpperCase()}
-        </button>
-      ))}
-    </div>
+    <label className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+      <Globe2 className="h-4 w-4 shrink-0 text-slate-600" aria-hidden="true" />
+      <span className="hidden shrink-0 text-xs font-medium text-slate-600 sm:inline">Language / Langue</span>
+      <select
+        value={selectedWebsiteLanguage}
+        onChange={(event) => {
+          const selectedOption = websiteLanguages.find((option) => option.code === event.target.value);
+          if (selectedOption) selectWebsiteLanguage(selectedOption.code);
+        }}
+        className="w-[38vw] min-w-0 max-w-[18rem] cursor-pointer bg-transparent text-sm font-medium text-slate-800 sm:w-auto"
+        aria-label="Website language / Langue du site"
+      >
+        {websiteLanguages.map((option) => (
+          <option key={option.code} value={option.code} lang={option.locale} dir={option.direction}>
+            {option.nativeName}
+            {option.nativeName !== option.englishName ? ` — ${option.englishName}` : ''}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 
   const updatePreference = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
@@ -1103,9 +1118,9 @@ function App() {
       return (
         <div className="space-y-6">
           <div>
-            <p className="mb-3 text-sm font-semibold text-slate-800">{translateText('What would help you feel comfortable accessing care?', language)}</p>
+            <p className="mb-3 text-sm font-semibold text-slate-800">{translateText('Which spoken languages would help you feel comfortable accessing care?', language)}</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              {languageOptions.map((languageLabel) => (
+              {preferredLanguageOptions.map((languageLabel) => (
                 <button
                   key={languageLabel}
                   type="button"
@@ -1354,26 +1369,7 @@ function App() {
             </nav>
 
             <div className="hidden items-center gap-3 lg:flex">
-              <div className="flex rounded-full border border-slate-200 bg-slate-50 p-1">
-                <button
-                  type="button"
-                  onClick={() => handleLanguageToggle('en')}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                    language === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
-                  }`}
-                >
-                  EN
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleLanguageToggle('fr')}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                    language === 'fr' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
-                  }`}
-                >
-                  FR
-                </button>
-              </div>
+              {renderLanguageToggle()}
               <button
                 type="button"
                 onClick={() => openSection('find-care')}
@@ -1404,16 +1400,8 @@ function App() {
               <button type="button" onClick={() => openSection('track')} className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
                 {t.trackApplication}
               </button>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
-                <span className="text-sm font-medium text-slate-700">Language</span>
-                <div className="flex rounded-full border border-slate-200 bg-white p-1">
-                  <button type="button" onClick={() => handleLanguageToggle('en')} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${language === 'en' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>
-                    EN
-                  </button>
-                  <button type="button" onClick={() => handleLanguageToggle('fr')} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${language === 'fr' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>
-                    FR
-                  </button>
-                </div>
+              <div className="flex justify-start">
+                {renderLanguageToggle()}
               </div>
             </div>
           )}
